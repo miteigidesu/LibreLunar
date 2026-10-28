@@ -1,0 +1,86 @@
+name: Build LibreLunar
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Windows Executable
+    runs-on: windows-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Resolve calendar version (YYYY.MM.DD.run_number)
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python scripts/resolve_version.py
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Run unit tests
+        shell: pwsh
+        run: |
+          python -m unittest discover librelunar/tests
+
+      - name: Build directory release with PyInstaller
+        shell: pwsh
+        run: |
+          $ver = $env:APP_VERSION
+          pyinstaller --noconfirm --onedir --windowed `
+            --contents-directory "_internal" `
+            --name "LibreLunar" `
+            --icon "librelunar/resources/icon.ico" `
+            --version-file "version_info.txt" `
+            --manifest "app.manifest" `
+            --noupx `
+            --add-data "librelunar/resources;librelunar/resources" `
+            --add-data "librelunar/i18n;librelunar/i18n" `
+            LibreLunar.py
+
+          # Compress into zip with nested LibreLunar folder:
+          # LibreLunar.zip -> LibreLunar/ -> _internal/, LibreLunar.exe
+          Compress-Archive -Path "dist/LibreLunar" -DestinationPath "dist/LibreLunar-v${ver}.zip" -Force
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: LibreLunar-v${{ env.APP_VERSION }}
+          path: dist/LibreLunar-v${{ env.APP_VERSION }}.zip
+          retention-days: 14
+
+      - name: Create or update Release (on main or tags)
+        if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('v{0}', env.APP_VERSION) }}
+          name: LibreLunar v${{ env.APP_VERSION }}
+          draft: false
+          prerelease: false
+          files: dist/LibreLunar-v${{ env.APP_VERSION }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

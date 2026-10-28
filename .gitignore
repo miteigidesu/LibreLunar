@@ -1,0 +1,47 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+dist_nuitka/
+*.build/
+*.dist/
+*.onefile-build/
+nuitka-crash-report.xml
+*.egg-info/
+*.egg
+*.spec
+
+# User and runtime data
+Data/
+.lunarclient/
+profiles/
+metadata/
+offline/
+*.part
+launch.bat
+.game_running
+.perm_check
+config.json
+portable.txt
+_version.py
+
+# Environments
+.venv/
+venv/
+env/
+ENV/
+
+# IDE & OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+Thumbs.db
+Desktop.ini
+
+# junk
+_archived.py

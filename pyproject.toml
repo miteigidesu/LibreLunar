@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "librelunar"
+dynamic = ["version"]
+description = "A lightweight, open-source launcher for Lunar Client."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Miteigi" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Environment :: X11 Applications :: Qt",
+]
+dependencies = [
+    "PySide6>=6.5.0",
+]
+
+[project.scripts]
+librelunar = "librelunar.app:main"
+
+[project.urls]
+Homepage = "https://github.com/LibreLunar/LibreLunar"
+
+[tool.setuptools.packages.find]
+include = ["librelunar*"]
+
+[tool.setuptools.package-data]
+librelunar = ["resources/*", "i18n/*"]
+
+
